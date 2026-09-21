@@ -1,117 +1,56 @@
 import os
-import json
-import logging
-import aiohttp
+import asyncio
+from aiohttp import web
 from aiogram import Bot, Dispatcher, types
-from aiogram.filters import Command
+from aiogram.filters import CommandStart
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton, WebAppInfo
 
-# کدهای حساس از متغیرهای محیطی خوانده می‌شوند (امنیت کامل)
 BOT_TOKEN = os.getenv("BOT_TOKEN")
 PANEL_API_KEY = os.getenv("PANEL_API_KEY")
-PANEL_API_URL = "https://panel.buymember.top/api/v2"
-MINIAPP_URL = os.getenv("MINIAPP_URL")
+MINIAPP_URL = os.getenv("MINIAPP_URL", "https://buymember.github.io/buymember-bot/")
 
-bot = Bot(token=GAPGPTMASKTOKEN906dsl802rdX0X
+if not BOT_TOKEN:
+    raise ValueError("Error: BOT_TOKEN is not set in Environment Variables!")
+
+bot = Bot(token=BOT_TOKEN)
 dp = Dispatcher()
 
-# کش کردن سرویس‌ها برای افزایش سرعت
-cached_services = []
-
-async def fetch_services():
-    global cached_services
-    async with aiohttp.ClientSession() as session:
-        payload = {"key": PANEL_API_KEY, "action": "services"}
-        async with session.post(PANEL_API_URL, data=payload) as resp:
-            cached_services = await resp.json()
-            return cached_services
-
-# دستور /start برای باز کردن مینی‌اپ
-@dp.message(Command("start"))
+@dp.message(CommandStart())
 async def start_handler(message: types.Message):
-    markup = InlineKeyboardMarkup(inline_keyboard=[
-        [
-            InlineKeyboardButton(
-                text="⚡ Open Order Store",
-                web_app=WebAppInfo(url=MINIAPP_URL)
-            )
-        ],
-        [
-            InlineKeyboardButton(text="💳 Balance / Deposit", callback_data="balance"),
-            InlineKeyboardButton(text="📦 Orders History", callback_data="history")
+    kb = InlineKeyboardMarkup(
+        inline_keyboard=[
+            [
+                InlineKeyboardButton(
+                    text="🚀 ورود به پنل خدمات",
+                    web_app=WebAppInfo(url=MINIAPP_URL)
+                )
+            ]
         ]
-    ])
-    
+    )
     await message.answer(
-        f"Hi {message.from_user.first_name}! 👋\n"
-        "Welcome to **BuyMember Store**.\n"
-        "Tap the button below to browse services and place your order directly:",
-        reply_markup=markup,
-        parse_mode="Markdown"
+        f"سلام {message.from_user.first_name} عزیز! 👋\n"
+        "برای مشاهده خدمات و ثبت سفارش روی دکمه زیر کلیک کنید:",
+        reply_markup=kb
     )
 
-# دریافت نتیجه خرید از طریق مینی‌اپ
-@dp.message(lambda msg: msg.web_app_data is not None)
-async def web_app_receive_handler(message: types.Message):
-    data = json.loads(message.web_app_data.data)
-    
-    service_id = data.get("service_id")
-    link = data.get("link")
-    quantity = data.get("quantity")
-    
-    await message.answer("⏳ Processing your order with the server...")
-    
-    # ارسال به API پنل شما
-    async with aiohttp.ClientSession() as session:
-        payload = {
-            "key": PANEL_API_KEY,
-            "action": "add",
-            "service": service_id,
-            "link": link,
-            "quantity": quantity
-        }
-        async with session.post(PANEL_API_URL, data=payload) as resp:
-            result = await resp.json()
-            
-            if "order" in result:
-                order_id = result["order"]
-                await message.answer(
-                    f"✅ **Order Placed Successfully!**\n\n"
-                    f"🆔 Order ID: `{order_id}`\n"
-                    f"🔗 Target: `{link}`\n"
-                    f"🔢 Quantity: `{quantity}`\n\n"
-                    "We are processing your request now.",
-                    parse_mode="Markdown"
-                )
-            else:
-                error_msg = result.get("error", "Unknown error occurred.")
-                await message.answer(f"❌ **Failed to place order:** {error_msg}")
+# وب‌سرور ساده برای راضی نگه داشتن Web Service در Render
+async def handle_ping(request):
+    return web.Response(text="Bot is running!")
 
-# API Endpoint برای مینی‌اپ
-async def services_endpoint(request):
-    global cached_services
-    if not cached_services:
-        await fetch_services()
-    return web.json_response(cached_services)
-
-async def main():
-    logging.basicConfig(level=logging.INFO)
-    await fetch_services()
-    
-    # راه‌اندازی سرور مینی‌اپ
+async def start_web_server():
     app = web.Application()
-    app.router.add_get('/api/services', services_endpoint)
-    # سرو فایل استاتیک
-    app.router.add_static('/', path='./public', show_index=True)
-    
+    app.router.add_get("/", handle_ping)
+    app.router.add_get("/health", handle_ping)
     runner = web.AppRunner(app)
     await runner.setup()
-    site = web.TCPSite(runner, '0.0.0.0', 8080)
+    port = int(os.getenv("PORT", 8080))
+    site = web.TCPSite(runner, "0.0.0.0", port)
     await site.start()
 
-    # اجرای ربات
+async def main():
+    print("Bot is starting...")
+    await start_web_server()
     await dp.start_polling(bot)
 
 if __name__ == "__main__":
-    import asyncio
     asyncio.run(main())
