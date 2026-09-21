@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>BuyMember Store</title>
+  <!-- Telegram Web App SDK -->
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <!-- Google Fonts: Inter -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #0f1115;
+      --card-bg: rgba(26, 29, 36, 0.85);
+      --accent: #2AABEE; /* Telegram Blue */
+      --accent-hover: #229ED9;
+      --text: #ffffff;
+      --text-muted: #8e95a5;
+      --border: rgba(255, 255, 255, 0.08);
+      --radius: 16px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      padding: 16px;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Header */
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+    }
+    .brand {
+      font-size: 1.25rem;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+    }
+    .brand span {
+      color: var(--accent);
+    }
+    .user-pill {
+      font-size: 0.85rem;
+      background: rgba(255, 255, 255, 0.05);
+      padding: 6px 12px;
+      border-radius: 20px;
+      color: var(--text-muted);
+      border: 1px solid var(--border);
+    }
+
+    /* Cards */
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 18px;
+      margin-bottom: 16px;
+      backdrop-filter: blur(12px);
+    }
+
+    .form-group {
+      margin-bottom: 16px;
+    }
+    .form-group:last-child {
+      margin-bottom: 0;
+    }
+
+    label {
+      display: block;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    select, input {
+      width: 100%;
+      background: rgba(15, 17, 21, 0.6);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 12px 14px;
+      border-radius: 12px;
+      font-size: 0.95rem;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    select:focus, input:focus {
+      border-color: var(--accent);
+    }
+
+    .service-meta {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-top: 8px;
+    }
+
+    /* Pricing Summary */
+    .price-summary {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-top: 12px;
+      border-top: 1px solid var(--border);
+      margin-top: 14px;
+    }
+    .price-label {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+    }
+    .total-price {
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: var(--accent);
+    }
+
+    /* Submit Button */
+    .submit-btn {
+      width: 100%;
+      background: var(--accent);
+      color: white;
+      border: none;
+      padding: 14px;
+      border-radius: 14px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      margin-top: auto;
+      transition: opacity 0.2s;
+    }
+    .submit-btn:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    .toast {
+      padding: 12px;
+      border-radius: 10px;
+      font-size: 0.85rem;
+      margin-bottom: 12px;
+      display: none;
+    }
+    .toast.error {
+      background: rgba(255, 69, 58, 0.15);
+      color: #ff453a;
+      border: 1px solid rgba(255, 69, 58, 0.3);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top bar -->
+  <div class="header">
+    <div class="brand">Buy<span>Member</span></div>
+    <div id="user-display" class="user-pill">Guest</div>
+  </div>
+
+  <div id="toast" class="toast"></div>
+
+  <!-- Order Form -->
+  <div class="card">
+    <div class="form-group">
+      <label for="category">Category</label>
+      <select id="category">
+        <option value="">Select Category...</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label for="service">Service</label>
+      <select id="service" disabled>
+        <option value="">Select Category First</option>
+      </select>
+      <div class="service-meta" id="service-limits">
+        <span>Min: -</span>
+        <span>Max: -</span>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label for="link">Target Link / Username</label>
+      <input type="text" id="link" placeholder="e.g. https://t.me/channel" />
+    </div>
+
+    <div class="form-group">
+      <label for="quantity">Quantity</label>
+      <input type="number" id="quantity" placeholder="0" />
+    </div>
+
+    <div class="price-summary">
+      <span class="price-label">Estimated Total</span>
+      <span class="total-price" id="total-price">$0.00</span>
+    </div>
+  </div>
+
+  <button class="submit-btn" id="order-btn" disabled>
+    Place Order
+  </button>
+
+  <script>
+    const tg = window.Telegram.WebApp;
+    tg.expand(); // تمام‌صفحه کردن وب‌اپ در تلگرام
+
+    // نمایش نام کاربر تلگرام
+    if (tg.initDataUnsafe && tg.initDataUnsafe.user) {
+      document.getElementById('user-display').innerText = tg.initDataUnsafe.user.first_name;
+    }
+
+    let servicesData = [];
+    let selectedService = null;
+
+    // بارگذاری سرویس‌ها از سرور/پنل
+    async function loadServices() {
+      try {
+        // آدرس بک‌اند شما که API پنل را کش و پروکسی می‌کند
+        const res = await fetch('/api/services');
+        servicesData = await res.json();
+        populateCategories();
+      } catch (err) {
+        showError('Unable to load services. Please try again.');
+      }
+    }
+
+    function populateCategories() {
+      const categories = [...new Set(servicesData.map(s => s.category))];
+      const categorySelect = document.getElementById('category');
+      categorySelect.innerHTML = '<option value="">Select Category...</option>';
+      categories.forEach(cat => {
+        const opt = document.createElement('option');
+        opt.value = cat;
+        opt.textContent = cat;
+        categorySelect.appendChild(opt);
+      });
+    }
+
+    document.getElementById('category').addEventListener('change', (e) => {
+      const cat = e.target.value;
+      const serviceSelect = document.getElementById('service');
+      serviceSelect.innerHTML = '<option value="">Select Service...</option>';
+      
+      if (!cat) {
+        serviceSelect.disabled = true;
+        return;
+      }
+
+      const filtered = servicesData.filter(s => s.category === cat);
+      filtered.forEach(s => {
+        const opt = document.createElement('option');
+        opt.value = s.service;
+        opt.textContent = `${s.name} - $${s.rate}/1k`;
+        serviceSelect.appendChild(opt);
+      });
+      serviceSelect.disabled = false;
+    });
+
+    document.getElementById('service').addEventListener('change', (e) => {
+      const id = e.target.value;
+      selectedService = servicesData.find(s => s.service == id);
+      if (selectedService) {
+        document.getElementById('service-limits').innerHTML = 
+          `<span>Min: ${selectedService.min}</span><span>Max: ${selectedService.max}</span>`;
+        calculateTotal();
+      }
+    });
+
+    document.getElementById('quantity').addEventListener('input', calculateTotal);
+
+    function calculateTotal() {
+      const qty = parseInt(document.getElementById('quantity').value) || 0;
+      const btn = document.getElementById('order-btn');
+      
+      if (selectedService && qty > 0) {
+        const ratePer1k = parseFloat(selectedService.rate);
+        const total = ((qty / 1000) * ratePer1k).toFixed(4);
+        document.getElementById('total-price').innerText = `$${total}`;
+        
+        if (qty >= selectedService.min && qty <= selectedService.max) {
+          btn.disabled = false;
+        } else {
+          btn.disabled = true;
+        }
+      } else {
+        document.getElementById('total-price').innerText = '$0.00';
+        btn.disabled = true;
+      }
+    }
+
+    document.getElementById('order-btn').addEventListener('click', () => {
+      const link = document.getElementById('link').value.trim();
+      const qty = parseInt(document.getElementById('quantity').value);
+
+      if (!link) {
+        showError('Please enter a target link');
+        return;
+      }
+
+      // ارسال داده‌ها به تلگرام
+      const payload = {
+        action: 'new_order',
+        service_id: selectedService.service,
+        service_name: selectedService.name,
+        link: link,
+        quantity: qty
+      };
+
+      // ارسال به ربات تلگرام و بستن مینی‌اپ
+      tg.sendData(JSON.stringify(payload));
+    });
+
+    function showError(msg) {
+      const t = document.getElementById('toast');
+      t.innerText = msg;
+      t.className = 'toast error';
+      t.style.display = 'block';
+      setTimeout(() => { t.style.display = 'none'; }, 4000);
+    }
+
+    loadServices();
+  </script>
+</body>
+</html>
