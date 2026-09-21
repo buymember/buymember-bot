@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="fa" dir="rtl">
+<html lang="en" dir="ltr">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
@@ -7,96 +7,93 @@
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <style>
     :root {
-      --bg-color: #0f172a;
-      --card-bg: #1e293b;
-      --text-main: #f8fafc;
-      --text-muted: #94a3b8;
-      --accent: #38bdf8;
-      --accent-hover: #0284c7;
-      --border-color: #334155;
+      --bg: #0f172a;
+      --card: #1e293b;
+      --text: #f8fafc;
+      --muted: #94a3b8;
+      --primary: #38bdf8;
+      --primary-hover: #0284c7;
+      --border: #334155;
     }
     * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
     body {
       margin: 0; padding: 16px;
-      background-color: var(--bg-color);
-      color: var(--text-main);
+      background-color: var(--bg);
+      color: var(--text);
     }
     .header {
       display: flex; justify-content: space-between; align-items: center;
-      margin-bottom: 20px; padding-bottom: 10px; border-bottom: 1px solid var(--border-color);
+      margin-bottom: 20px; padding-bottom: 10px; border-bottom: 1px solid var(--border);
     }
-    .logo { font-size: 1.25rem; font-weight: 800; color: var(--accent); }
-    .user-pill {
-      background: var(--border-color); padding: 4px 10px; border-radius: 9999px;
-      font-size: 0.8rem; color: var(--text-muted);
-    }
+    .logo { font-size: 1.2rem; font-weight: 700; color: var(--primary); }
+    .user { font-size: 0.85rem; color: var(--muted); background: var(--card); padding: 4px 10px; border-radius: 20px; }
     .form-group { margin-bottom: 16px; }
-    label { display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 6px; color: var(--text-muted); }
+    label { display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 6px; color: var(--muted); }
     select, input {
       width: 100%; padding: 12px; border-radius: 8px;
-      background: var(--card-bg); border: 1px solid var(--border-color);
-      color: var(--text-main); font-size: 0.95rem; outline: none;
+      background: var(--card); border: 1px solid var(--border);
+      color: var(--text); font-size: 0.95rem; outline: none;
     }
-    select:focus, input:focus { border-color: var(--accent); }
-    .limits { display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--text-muted); margin-top: 4px; }
+    select:focus, input:focus { border-color: var(--primary); }
+    .limits { display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--muted); margin-top: 4px; }
     .price-box {
-      background: rgba(56, 189, 248, 0.1); border: 1px dashed var(--accent);
+      background: rgba(56, 189, 248, 0.1); border: 1px dashed var(--primary);
       border-radius: 8px; padding: 12px; display: flex;
       justify-content: space-between; align-items: center; margin-bottom: 20px;
     }
-    .price-val { font-size: 1.2rem; font-weight: 700; color: var(--accent); }
+    .price-val { font-size: 1.2rem; font-weight: 700; color: var(--primary); }
     .btn {
       width: 100%; padding: 14px; border: none; border-radius: 8px;
-      background: var(--accent); color: #000; font-weight: 700; font-size: 1rem;
-      cursor: pointer; transition: 0.2s;
+      background: var(--primary); color: #000; font-weight: 700; font-size: 1rem;
+      cursor: pointer;
     }
-    .btn:active { background: var(--accent-hover); transform: scale(0.98); }
-    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
-    .loading-spinner { text-align: center; color: var(--text-muted); font-size: 0.85rem; margin-top: 10px; }
+    .btn:active { background: var(--primary-hover); }
+    .btn:disabled { opacity: 0.5; cursor: secret-a6b1218c-allowed; }
+    .status { text-align: center; font-size: 0.8rem; margin-top: 10px; color: var(--muted); word-break: break-all; }
   </style>
 </head>
 <body>
 
   <div class="header">
     <div class="logo">BuyMember</div>
-    <div class="user-pill" id="userDisplay">مهمان</div>
+    <div class="user" id="userDisplay">User</div>
   </div>
 
   <div class="form-group">
-    <label>دسته‌بندی (Category)</label>
+    <label>Category</label>
     <select id="categorySelect">
-      <option value="">در حال دریافت لیست سرویس‌ها...</option>
+      <option value="">Loading services...</option>
     </select>
   </div>
 
   <div class="form-group">
-    <label>سرویس (Service)</label>
+    <label>Service</label>
     <select id="serviceSelect" disabled>
-      <option value="">ابتدا دسته‌بندی را انتخاب کنید</option>
+      <option value="">Select a category first</option>
     </select>
     <div class="limits">
-      <span id="minLimit">حداقل: -</span>
-      <span id="maxLimit">حداکثر: -</span>
+      <span id="minLimit">Min: -</span>
+      <span id="maxLimit">Max: -</span>
     </div>
   </div>
 
   <div class="form-group">
-    <label>لینک هدف یا آیدی</label>
-    <input type="text" id="targetLink" placeholder="مثال: https://t.me/channel" dir="ltr">
+    <label>Target Link / Username</label>
+    <input type="text" id="targetLink" placeholder="https://t.me/channel">
   </div>
 
   <div class="form-group">
-    <label>تعداد (Quantity)</label>
-    <input type="number" id="quantityInput" placeholder="100" min="1" dir="ltr">
+    <label>Quantity</label>
+    <input type="number" id="quantityInput" placeholder="100" min="1">
   </div>
 
   <div class="price-box">
-    <span>مبلغ نهایی تقریبی:</span>
+    <span>Estimated Total:</span>
     <span class="price-val" id="totalPrice">$0.00</span>
   </div>
 
-  <button class="btn" id="submitBtn">ثبت سفارش</button>
-  <div id="statusText" class="loading-spinner"></div>
+  <button class="btn" id="submitBtn">Submit Order</button>
+  <div id="statusText" class="status"></div>
 
   <script>
     const tg = window.Telegram?.WebApp;
@@ -104,11 +101,11 @@
       tg.expand();
       const user = tg.initDataUnsafe?.user;
       if (user) {
-        document.getElementById('userDisplay').innerText = user.first_name || user.username || "کاربر";
+        document.getElementById('userDisplay').innerText = user.first_name || "User";
       }
     }
 
-    // آدرس بک‌اند Render شما:
+    // آدرس سرور رندر شما:
     const RENDER_BACKEND_URL = "https://buymember-bot.onrender.com";
 
     let allServices = [];
@@ -125,27 +122,30 @@
     const submitBtn = document.getElementById('submitBtn');
     const statusText = document.getElementById('statusText');
 
-    // دریافت لیست سرویس‌ها از بک‌اند
     async function loadServices() {
       try {
-        statusText.innerText = "در حال بارگذاری سرویس‌ها از سرور...";
+        statusText.innerText = "Connecting to server...";
         const res = await fetch(`${RENDER_BACKEND_URL}/services`);
-        allServices = await res.json();
-
-        if (!Array.isArray(allServices)) {
-          throw new Error("داده‌های دریافتی نامعتبر است");
+        
+        if (!res.ok) {
+          throw new Error(`HTTP Error: ${res.status}`);
+        }
+        
+        const data = await res.json();
+        
+        if (!Array.isArray(data)) {
+          throw new Error(data.error || "Invalid response format from panel");
         }
 
-        // گروه‌بندی بر اساس دسته‌بندی
+        allServices = data;
         categories = {};
         allServices.forEach(s => {
-          const cat = s.category || "سایر";
+          const cat = s.category || "Other";
           if (!categories[cat]) categories[cat] = [];
           categories[cat].push(s);
         });
 
-        // پر کردن دسته بندی‌ها
-        categorySelect.innerHTML = '<option value="">انتخاب دسته‌بندی...</option>';
+        categorySelect.innerHTML = '<option value="">Select Category...</option>';
         Object.keys(categories).forEach(cat => {
           const opt = document.createElement('option');
           opt.value = cat;
@@ -156,14 +156,14 @@
         statusText.innerText = "";
       } catch (err) {
         console.error(err);
-        categorySelect.innerHTML = '<option value="">خطا در بارگذاری سرویس‌ها</option>';
-        statusText.innerText = "عدم برقراری ارتباط با سرور. لطفا مجدد تلاش کنید.";
+        categorySelect.innerHTML = '<option value="">Failed to load services</option>';
+        statusText.innerText = "Error: " + err.message;
       }
     }
 
     categorySelect.addEventListener('change', (e) => {
       const cat = e.target.value;
-      serviceSelect.innerHTML = '<option value="">انتخاب سرویس...</option>';
+      serviceSelect.innerHTML = '<option value="">Select Service...</option>';
       selectedService = null;
       calcPrice();
 
@@ -172,7 +172,7 @@
         categories[cat].forEach(s => {
           const opt = document.createElement('option');
           opt.value = s.service;
-          opt.innerText = `${s.name} (${s.rate}$ / 1k)`;
+          opt.innerText = `${s.name} ($${s.rate} / 1k)`;
           serviceSelect.appendChild(opt);
         });
       } else {
@@ -184,14 +184,14 @@
       const sId = e.target.value;
       selectedService = allServices.find(s => String(s.service) === String(sId));
       if (selectedService) {
-        minLimit.innerText = `حداقل: ${selectedService.min}`;
-        maxLimit.innerText = `حداکثر: ${selectedService.max}`;
+        minLimit.innerText = `Min: ${selectedService.min}`;
+        maxLimit.innerText = `Max: ${selectedService.max}`;
         if (!quantityInput.value || Number(quantityInput.value) < Number(selectedService.min)) {
           quantityInput.value = selectedService.min;
         }
       } else {
-        minLimit.innerText = `حداقل: -`;
-        maxLimit.innerText = `حداکثر: -`;
+        minLimit.innerText = `Min: -`;
+        maxLimit.innerText = `Max: -`;
       }
       calcPrice();
     });
@@ -213,34 +213,35 @@
       const link = targetLink.value.trim();
       const qty = parseInt(quantityInput.value, 10);
 
-      if (!selectedService) {
-        alert("لطفاً یک سرویس انتخاب کنید.");
-        return;
-      }
-      if (!link) {
-        alert("لطفاً لینک یا آیدی را وارد کنید.");
-        return;
-      }
-      if (isNaN(qty) || qty < Number(selectedService.min) || qty > Number(selectedService.max)) {
-        alert(`تعداد باید بین ${selectedService.min} و ${selectedService.max} باشد.`);
-        return;
-      }
-
-      const orderData = {
-        service: selectedService.service,
-        link: link,
-        quantity: qty
-      };
-
-      if (tg) {
-        tg.sendData(JSON.stringify(orderData));
-        tg.close();
+      if (!(s.service) === String(sId));
+      if (selectedService) {
+        minLimit.innerText = `Min: ${selectedService.min}`;
+        maxLimit.innerText = `Max: ${selectedService.max}`;
+        if (!quantityInput.value || Number(quantityInput.value) < Number(selectedService.min)) {
+          quantityInput.value = selectedService.min;
+        }
       } else {
-        alert("اطلاعات ثبت شد:\n" + JSON.stringify(orderData, null, 2));
+        minLimit.innerText = `Min: -`;
+        maxLimit.innerText = `Max: -`;
       }
+      calcPrice();
     });
 
-    loadServices();
-  </script>
-</body>
-</html>
+    quantityInput.addEventListener('input', calcPrice);
+
+    function calcPrice() {
+      if (!selectedService || !quantityInput.value) {
+        totalPrice.innerText = "$0.00";
+        return;
+      }
+      const qty = parseFloat(quantityInput.value) || 0;
+      const rate = parseFloat(selectedService.rate) || 0;
+      const cost = (qty / 1000) * rate;
+      totalPrice.innerText = `$${cost.toFixed(3)}`;
+    }
+
+    submitBtn.addEventListener('click', () => {
+      const link = targetLink.value.trim();
+      const qty = parseInt(quantityInput.value, 10);
+
+      if (!
