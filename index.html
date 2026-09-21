@@ -28,26 +28,7 @@
     .logo { font-size: 1.2rem; font-weight: 700; color: var(--primary); }
     .user { font-size: 0.85rem; color: var(--muted); background: var(--card); padding: 4px 10px; border-radius: 20px; }
     .form-group { margin-bottom: 16px; }
-    label { display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 6px; color: var(--muted); }
-    select, input {
-      width: 100%; padding: 12px; border-radius: 8px;
-      background: var(--card); border: 1px solid var(--border);
-      color: var(--text); font-size: 0.95rem; outline: none;
-    }
-    select:focus, input:focus { border-color: var(--primary); }
-    .limits { display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--muted); margin-top: 4px; }
-    .price-box {
-      background: rgba(56, 189, 248, 0.1); border: 1px dashed var(--primary);
-      border-radius: 8px; padding: 12px; display: flex;
-      justify-content: space-between; align-items: center; margin-bottom: 20px;
-    }
-    .price-val { font-size: 1.2rem; font-weight: 700; color: var(--primary); }
-    .btn {
-      width: 100%; padding: 14px; border: none; border-radius: 8px;
-      background: var(--primary); color: #000; font-weight: 700; font-size: 1rem;
-      cursor: pointer;
-    }
-    .btn:active { background: var(--primary-hover); }
+    label { display: block; font-size: 0.85rem;active { background: var(--primary-hover); transform: scale(0.98); }
     .btn:disabled { opacity: 0.5; cursor: secret-a6b1218c-allowed; }
     .status { text-align: center; font-size: 0.8rem; margin-top: 10px; color: var(--muted); word-break: break-all; }
   </style>
@@ -105,7 +86,6 @@
       }
     }
 
-    // آدرس سرور رندر شما:
     const RENDER_BACKEND_URL = "https://buymember-bot.onrender.com";
 
     let allServices = [];
@@ -213,35 +193,34 @@
       const link = targetLink.value.trim();
       const qty = parseInt(quantityInput.value, 10);
 
-      if (!(s.service) === String(sId));
-      if (selectedService) {
-        minLimit.innerText = `Min: ${selectedService.min}`;
-        maxLimit.innerText = `Max: ${selectedService.max}`;
-        if (!quantityInput.value || Number(quantityInput.value) < Number(selectedService.min)) {
-          quantityInput.value = selectedService.min;
-        }
-      } else {
-        minLimit.innerText = `Min: -`;
-        maxLimit.innerText = `Max: -`;
-      }
-      calcPrice();
-    });
-
-    quantityInput.addEventListener('input', calcPrice);
-
-    function calcPrice() {
-      if (!selectedService || !quantityInput.value) {
-        totalPrice.innerText = "$0.00";
+      if (!selectedService) {
+        alert("Please select a service first.");
         return;
       }
-      const qty = parseFloat(quantityInput.value) || 0;
-      const rate = parseFloat(selectedService.rate) || 0;
-      const cost = (qty / 1000) * rate;
-      totalPrice.innerText = `$${cost.toFixed(3)}`;
-    }
+      if (!link) {
+        alert("Please enter a target link or username.");
+        return;
+      }
+      if (isNaN(qty) || qty < Number(selectedService.min) || qty > Number(selectedService.max)) {
+        alert(`Quantity must be between ${selectedService.min} and ${selectedService.max}.`);
+        return;
+      }
 
-    submitBtn.addEventListener('click', () => {
-      const link = targetLink.value.trim();
-      const qty = parseInt(quantityInput.value, 10);
+      const orderData = {
+        service: selectedService.service,
+        link: link,
+        quantity: qty
+      };
 
-      if (!
+      if (tg) {
+        tg.sendData(JSON.stringify(orderData));
+        tg.close();
+      } else {
+        alert("Order Ready to Send:\n" + JSON.stringify(orderData, null, 2));
+      }
+    });
+
+    loadServices();
+  </script>
+</body>
+</html>
