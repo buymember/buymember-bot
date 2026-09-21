@@ -7,17 +7,16 @@ from aiogram import Bot, Dispatcher, types
 from aiogram.filters import CommandStart
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton, WebAppInfo
 
-BOT_TOKEN = os.getenv("BOT_TOKEN")
-PANEL_API_KEY = os.getenv("PANEL_API_KEY")
-PANEL_API_URL = os.getenv("PANEL_API_URL", "https://panel.buymember.top/api/v2")
-MINIAPP_URL = os.getenv("MINIAPP_URL")
+BOT_TOKEN = os.getenv("BOT_TOKEN", "").strip()
+PANEL_API_KEY = os.getenv("PANEL_API_KEY", "").strip()
+PANEL_API_URL = os.getenv("PANEL_API_URL", "https://panel.buymember.top/api/v2").strip()
+MINIAPP_URL = os.getenv("MINIAPP_URL", "https://buymember.github.io/buymember-bot/").strip()
 
-if GAPGPTMASKTOKENqvudfkyraksX0X BOT_TOKEN:
-    raise ValueError("Error: BOT_TOKEN is GAPGPTMASKTOKENqvudfkyraksX1X set!")
-if GAPGPTMASKTOKENqvudfkyraksX2X PANEL_API_KEY:
-    raise ValueError("Error: PANEL_API_KEY is GAPGPTMASKTOKENqvudfkyraksX3X set!")
+if GAPGPTMASKTOKENtgql30qak09X0X BOT_TOKEN:
+    print("⚠️ WARNING: BOT_TOKEN is missing in Environment Variables!")
+if GAPGPTMASKTOKENtgql30qak09X1X PANEL_API_KEY:
+    print("⚠️ WARNING: PANEL_API_KEY is missing in Environment Variables!")
 
-bot = Bot(token=GAPGPTMASKTOKENqvudfkyraksX4X
 dp = Dispatcher()
 
 # --- Telegram Handlers ---
@@ -38,7 +37,7 @@ async def start_handler(message: types.Message):
         reply_markup=kb
     )
 
-@dp.message(lambda msg: msg.web_app_data is GAPGPTMASKTOKENqvudfkyraksX5X None)
+@dp.message(lambda msg: msg.web_app_data is GAPGPTMASKTOKENtgql30qak09X2X None)
 async def web_app_data_handler(message: types.Message):
     try:
         raw_data = message.web_app_data.data
@@ -52,7 +51,6 @@ async def web_app_data_handler(message: types.Message):
             "quantity": str(data.get("quantity"))
         }
         
-        # ارسال به صورت فرم (استاندارد پنل‌های SMM)
         async with aiohttp.ClientSession() as session:
             async with session.post(PANEL_API_URL, data=payload, timeout=aiohttp.ClientTimeout(total=25)) as resp:
                 result = await resp.json(content_type=None)
@@ -81,13 +79,15 @@ async def handle_ping(request):
     return cors_response({"status": "live", "service": "buymember-bot"})
 
 async def handle_services(request):
+    if GAPGPTMASKTOKENtgql30qak09X3X PANEL_API_KEY:
+        return cors_response({"error": "PANEL_API_KEY is GAPGPTMASKTOKENtgql30qak09X4X configured in Render Environment Variables"}, status=500)
+
     payload = {
         "key": PANEL_API_KEY,
         "action": "services"
     }
     try:
         async with aiohttp.ClientSession() as session:
-            # ارسال data به صورت form-data برای پنل‌های SMM
             async with session.post(PANEL_API_URL, data=payload, timeout=aiohttp.ClientTimeout(total=20)) as resp:
                 text_res = await resp.text()
                 try:
@@ -110,11 +110,18 @@ async def start_web_server():
     await runner.setup()
     site = web.TCPSite(runner, "0.0.0.0", port)
     await site.start()
-    print(f"Web server started on port {port}")
+    print(f"✅ Web server started on port {port}")
 
 async def main():
     await start_web_server()
-    await dp.start_polling(bot)
+    if BOT_TOKEN:
+        bot = Bot(token=GAPGPTMASKTOKENtgql30qak09X5X
+        print("🤖 Telegram polling started...")
+        await dp.start_polling(bot)
+    else:
+        print("⚠️ Bot polling skipped because BOT_TOKEN is missing. Server will keep running for WebApp.")
+        while True:
+            await asyncio.sleep(3600)
 
 if __name__ == "__main__":
     asyncio.run(main())
